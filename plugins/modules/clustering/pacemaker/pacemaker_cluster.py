@@ -12,6 +12,7 @@ DOCUMENTATION = '''
 module: pacemaker_cluster
 short_description: Manage pacemaker clusters
 author:
+- Mathieu Bultel (@mbultel)
 - Hani Audah (@haudah)
 description:
    - This module can manage a pacemaker cluster and nodes from Ansible using
@@ -45,6 +46,10 @@ options:
         - Force the change of the cluster state
       type: bool
       default: 'yes'
+    properties:
+      description:
+        - Properties to be applied onto the pacemaker cluster
+      type: dict
     enable:
       description:
         - Enable automatic cluster startup on the specified nodes
@@ -102,7 +107,7 @@ _PCS_NO_CLUSTER = "Error: unable to get crm_config"
 def get_cluster_status(module):
     cmd = "pcs cluster status"
     rc, out, err = module.run_command(cmd)
-    if out in _PCS_CLUSTER_DOWN:
+    if _PCS_CLUSTER_DOWN in err:
         return 'offline'
     else:
         return 'online'
@@ -257,7 +262,7 @@ def create_cluster(module, timeout, name, cluster_nodes, pcs_user, pcs_password,
             authenticate_nodes(module, nodes, pcs_user, pcs_password)
             for node in nodes:
                 cmd = "pcs cluster node add --start %s" % node
-                rc, out, err = module.run_command(cmd)
+                rc, out_node, err = module.run_command(cmd)
                 if rc == 1:
                     module.fail_json(msg="Failed to add node to cluster.\nCommand: `%s`\nError: %s" % (cmd, err))
 
