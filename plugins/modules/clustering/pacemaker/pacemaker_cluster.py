@@ -230,11 +230,12 @@ def create_cluster(module, timeout, name, cluster_nodes, pcs_user, pcs_password,
         rc, out, err = module.run_command(cmd)
         if rc == 1:
             module.fail_json(msg="Failed to create cluster.\nCommand: `%s`\nError: %s" % (cmd, err))
-        cmd = "pcs property set %s" % " ".join(["%s=%s" % props for props in properties.items()])
-        rc, out, err = module.run_command(cmd)
-        if rc == 1:
-            # if the cluster is up but still failed to get cluster config => error
-            module.fail_json(msg="Failed to set cluster properties.\nCommand: `%s`\nError: %s" % (cmd, err))
+        if len(properties.items()) > 0:
+            cmd = "pcs property set %s" % " ".join(["%s=%s" % props for props in properties.items()])
+            rc, out, err = module.run_command(cmd)
+            if rc == 1:
+                # if the cluster is up but still failed to get cluster config => error
+                module.fail_json(msg="Failed to set cluster properties.\nCommand: `%s`\nError: %s" % (cmd, err))
         return True
     else:
         # if cluster is offline but with same name, start it up to configure it
