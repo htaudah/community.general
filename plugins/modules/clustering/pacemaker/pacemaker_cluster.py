@@ -124,7 +124,7 @@ def authenticate_nodes(module, nodes, pcs_user, pcs_password):
 # i. PCSD status
 # ii. Pacemaker status
 # iii. Corosync status
-def get_nodes_status(module):
+def get_nodes_status(module, nodes=None):
     online_nodes = set()
     # once a node is counted as offline by any of these tests, it'll stay there
     offline_nodes = set()
@@ -151,8 +151,20 @@ def get_nodes_status(module):
     match_object = re.search(r'Pacemaker Remote Nodes:[\s\S]*?Online:((?: \S+)*)[\s\S]*?Offline:((?: \S+)*)\n', out)
     helper(match_object)
 
+    filtered_online_nodes = []
+    filtered_offline_nodes = []
+    if nodes != None:
+        for online_node in online_nodes:
+            if online_node in nodes:
+                filtered_online_nodes.append(online_node)
+        for offline_node in offline_nodes:
+            if offline_node in nodes:
+                filtered_offline_nodes.append(offline_node)
+    else:
+        filtered_online_nodes = online_nodes
+        filtered_offline_nodes = offline_nodes
     # return a tuple of the online, offline nodes
-    return (online_nodes, offline_nodes)
+    return (filtered_online_nodes, filtered_offline_nodes)
 
 
 def set_cluster(module, state, timeout, force):
