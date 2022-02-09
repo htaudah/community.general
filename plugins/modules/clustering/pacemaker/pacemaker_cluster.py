@@ -205,11 +205,11 @@ def set_nodes(module, state, nodes, timeout, force):
             # if the cluster is up but still failed to get cluster config => error
             module.fail_json(msg="Failed to stop the cluster on one or more nodes.\nCommand: `%s`\nError: %s" % (cmd, err))
 
-    online_nodes, offline_nodes = get_node_status(module, nodes)
+    online_nodes, offline_nodes = get_nodes_status(module, nodes)
     t = time.time()
     ready = False
     while time.time() < t + timeout:
-        online_nodes, offline_nodes = get_node_status(module, nodes)
+        online_nodes, offline_nodes = get_nodes_status(module, nodes)
         if (state == 'online' and len(offline_nodes) == 0) or (state == 'offline' and len(online_nodes) == 0):
             ready = True
             break
